@@ -1,7 +1,28 @@
+import { history } from './../../index';
 import axios, { AxiosResponse } from 'axios';
 import { IActivity } from '../models/activity';
+import { toast } from 'react-toastify';
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
+
+axios.interceptors.response.use(undefined, error => {
+    if(error.message === 'Network Error'){
+        toast.error('Network Error');
+    }
+    const { status, data, config } = error.response;
+    if(status === 404){
+        history.push('/notfound');
+    }
+
+    if(status === 400 && config.method === 'get' && data.errors.hasOwnProperty('id')){
+        history.push('/notfound');
+        toast.info('The Route Id is not valid');
+    }
+
+    if(status === 500){
+        toast.error('server error - check the terminal for more error');
+    }
+})
 
 const responseBody = (response: AxiosResponse) => response.data;
 
